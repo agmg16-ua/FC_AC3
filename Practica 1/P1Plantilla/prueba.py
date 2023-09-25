@@ -2,7 +2,7 @@ from variable import *
 
 def main():
     print("hola")
-    aux = Variable("V1", 5, [0,0], [4,0], "H")
+    aux = Variable("V1", 5, [0,0], [4,0])
     print(aux)
 
 if __name__=="__main__":

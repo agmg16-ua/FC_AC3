@@ -5,6 +5,7 @@ from tkinter.simpledialog import *
 from tkinter import messagebox as MessageBox
 from tablero import *
 from dominio import *
+from forward_checking import * #archivo con forward checking
 from pygame.locals import *
 
 GREY=(190, 190, 190)
@@ -140,7 +141,8 @@ def main():
                 pos=pygame.mouse.get_pos()                
                 if pulsaBotonFC(pos, anchoVentana, altoVentana):
                     print("FC")
-                    res=False #aquí llamar al forward checking
+                    res=False 
+                    forwardChecking(tablero, almacen)#aquí llamar al forward checking
                     if res==False:
                         MessageBox.showwarning("Alerta", "No hay solución")                                  
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
