@@ -3,14 +3,14 @@ from variable import *
 from dominio import *
 from main import *
 
-def forwardChecking(tablero, almacen):
+var_horiz = []
+var_vert = []
 
-    #Creación de las variables
+def inicializar_variables(tablero, almacen):
+        #Creación de las variables
     pos_inic = [-1, -1]
     pos_fin = [-1, -1]
     indice_var = 0
-    var_horiz = []
-    var_vert = []
     
     #Variables verticales
     for i in range (tablero.alto):
@@ -60,12 +60,33 @@ def forwardChecking(tablero, almacen):
                     var_vert.append(var_aux)
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
+    
+
+def crear_restricciones():
+
+    #se añade a la lista de restricciones la variable que intersecte
+    for hor in var_horiz:
+        for ver in var_vert:
+            if hor.pos_init[1] == ver.pos_init[1]:
+                if hor.pos_init[0] >= ver.pos_init[0] and hor.pos_init[0] <= ver.pos_fin[0]:
+                    hor.list_restr.append(ver.nombre)
+                    ver.list_restr.append(hor.nombre)
+
+
+def forwardChecking(tablero, almacen):
+    var_horiz.clear()
+    var_vert.clear()
+
+    inicializar_variables(tablero, almacen)
+
+    crear_restricciones()
 
     for var in (var_horiz):
-        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.dominio.lista))
+        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.list_restr))
 
     for var in (var_vert):
-        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.dominio.lista))
+        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.list_restr))
 
-                
+
+
 
