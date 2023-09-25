@@ -1,9 +1,8 @@
 from variable import *
 
 def main():
-    print("hola")
-    aux = Variable("V1", 5, [0,0], [4,0])
-    print(aux)
+    for i in range(3):
+        print("Hola" + str(i))
 
 if __name__=="__main__":
     main()
