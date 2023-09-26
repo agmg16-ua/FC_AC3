@@ -68,15 +68,10 @@ def crear_restricciones():
     for hor in var_horiz:
         for ver in var_vert:
             for i in range(hor.pos_fin[1]-hor.pos_init[1]+1):
-                print("hola1: " + hor.nombre + ' ' + str(hor.pos_init) + ' ' + str(hor.pos_fin))
-                print("hola2: " + ver.nombre + ' ' + str(ver.pos_init) + ' ' + str(ver.pos_fin))
                 if hor.pos_init[1]+i == ver.pos_init[1]:
                     if hor.pos_init[0] >= ver.pos_init[0] and hor.pos_init[0] <= ver.pos_fin[0]:
                         hor.list_restr.append(ver.nombre)
                         ver.list_restr.append(hor.nombre)
-                        print("yes")
-                
-                print()
 
 
 def forwardChecking(tablero, almacen):
