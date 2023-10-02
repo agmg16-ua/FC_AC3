@@ -70,11 +70,40 @@ def crear_restricciones():
             for i in range(hor.pos_fin[1]-hor.pos_init[1]+1):
                 if hor.pos_init[1]+i == ver.pos_init[1]:
                     if hor.pos_init[0] >= ver.pos_init[0] and hor.pos_init[0] <= ver.pos_fin[0]:
-                        hor.list_restr.append(ver.nombre)
-                        ver.list_restr.append(hor.nombre)
+                        hor.list_restr.append(ver)
+                        ver.list_restr.append(hor)
 
 
-def forwardChecking(tablero, almacen):
+def forward_checking(variable, indice_var):
+    for pal_dom in variable.dominio.lista:
+        variable.nombre = pal_dom
+        letra = 0
+        for pal_restr in variable.list_restr:
+            indice = var_vert.index(pal_restr)
+            var_vert[indice]
+            posicion_letra = variable.pos_init[0] - pal_restr.pos_init[0]
+
+            for pal_restr_dom in var_vert[indice].dominio.lista:
+                if pal_restr_dom[posicion_letra] != variable.nombre[0]:
+                    var_vert[indice].dominio.lista.remove(pal_restr_dom)
+                
+            if len(var_vert[indice].dominio.lista) == 0:
+                print("Se ha vaciado un dominio")
+                return 1
+
+            letra = letra + 1
+        
+        if len(var_horiz) == indice_var:
+            return 0
+        
+        seguir = forward_checking(var_horiz[indice_var + 1], indice_var + 1)
+
+        if seguir == 0:
+            return 0           
+            
+        
+
+def preparando(tablero, almacen):
     var_horiz.clear()
     var_vert.clear()
 
@@ -82,11 +111,12 @@ def forwardChecking(tablero, almacen):
 
     crear_restricciones()
 
-    for var in (var_horiz):
-        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.list_restr))
+    solucion = forward_checking(var_horiz[0], 0)
 
-    for var in (var_vert):
-        print(var.nombre + ": " + str(var.tamanyo) + ", " + str(var.list_restr))
+    if solucion == 0:
+        print("Se ha solucionado el crucigrama")
+    else:
+        print("No se ha solucionado el crucigrama")
 
 
 

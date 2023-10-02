@@ -1,8 +1,11 @@
 from variable import *
+from dominio import *
+from main import *
 
 def main():
-    for i in range(3):
-        print("Hola" + str(i))
+    palabra = "hola"
+    for letra in palabra:
+        print(letra)
 
 if __name__=="__main__":
     main()
