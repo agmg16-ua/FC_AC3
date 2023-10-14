@@ -9,6 +9,7 @@ class Variable:
         self.pos_fin = pos_fin
         self.palabra = ""
         self.list_restr = []
+        self.dom_elim = []
         self.dominio = Dominio(tamanyo)
 
         dom = 0

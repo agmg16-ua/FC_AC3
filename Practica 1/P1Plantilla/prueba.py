@@ -1,11 +1,17 @@
 from variable import *
 from dominio import *
-from main import *
 
 def main():
-    palabra = "hola"
-    for letra in palabra:
-        print(letra)
+    v1 = Variable("nom", 4, [0,2], [0,5], "j")
+    lista = []
+    lista.append(v1)
+
+    lista2 = []
+    lista2.append(v1)
+
+    lista[0].nombre = "pep"
+
+    print(lista2[0].nombre)
 
 if __name__=="__main__":
     main()

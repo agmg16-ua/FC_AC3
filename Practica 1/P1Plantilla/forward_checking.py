@@ -73,34 +73,50 @@ def crear_restricciones():
                         hor.list_restr.append(ver)
                         ver.list_restr.append(hor)
 
+def restaura_dominio(variable):
+    print("HOLA")
+
+def ajusta_dominio(variable):
+    indice = 0
+
+    for restriccion in variable.list_restr:
+        posicion = variable.pos_init[0] - restricción.pos_init[0]
+        podas = []
+
+        for pal_dom in restriccion.dominio.lista:
+            if pal_dom[posicion] != variable.nombre[indice]:
+                podas.append(pal_dom)
+            
+        for eliminar in podas:
+            restriccion.dominio.lista.pop(restriccion.dominio.lista.index(eliminar))
+        
+        indice = indice + 1
+
+        restriccion.dom_elim.append(podas)
+    
+    for restriccion in variable.list_restr:
+        if len(restriccion.dominio.lista) == 0:
+            return False
+    
+    return True
 
 def forward_checking(variable, indice_var):
-    for pal_dom in variable.dominio.lista:
+    for i, pal_dom in enumerate(variable.dominio.lista):
         variable.nombre = pal_dom
-        letra = 0
-        for pal_restr in variable.list_restr:
-            indice = var_vert.index(pal_restr)
-            var_vert[indice]
-            posicion_letra = variable.pos_init[0] - pal_restr.pos_init[0]
 
-            for pal_restr_dom in var_vert[indice].dominio.lista:
-                if pal_restr_dom[posicion_letra] != variable.nombre[0]:
-                    var_vert[indice].dominio.lista.remove(pal_restr_dom)
-                
-            if len(var_vert[indice].dominio.lista) == 0:
-                print("Se ha vaciado un dominio")
-                return 1
+        if ajusta_dominio(variable) == true:
+            indice_var = indice_var + 1
 
-            letra = letra + 1
+            if forward_checking(var_horiz[indice_var], indice_var) == True:
+                return True
+            else:
+                restaura_dominios(variable)
+        else:
+            restaura_dominios(variable)
         
-        if len(var_horiz) == indice_var:
-            return 0
+        if i  == len(variable.dominio.lista) - 1:
+            return False
         
-        seguir = forward_checking(var_horiz[indice_var + 1], indice_var + 1)
-
-        if seguir == 0:
-            return 0           
-            
         
 
 def preparando(tablero, almacen):
@@ -113,7 +129,7 @@ def preparando(tablero, almacen):
 
     solucion = forward_checking(var_horiz[0], 0)
 
-    if solucion == 0:
+    if solucion == True:
         print("Se ha solucionado el crucigrama")
     else:
         print("No se ha solucionado el crucigrama")
