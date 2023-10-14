@@ -74,13 +74,18 @@ def crear_restricciones():
                         ver.list_restr.append(hor)
 
 def restaura_dominio(variable):
-    print("HOLA")
+    for restriccion in variable.list_restr:
+        restaurar = restriccion.dom_elim[len(restriccion.dom_elim)-1]
+        for palabra in restaurar:
+            restriccion.dominio.lista.append(palabra)
+        
+        restriccion.dom_elim.pop()
 
 def ajusta_dominio(variable):
     indice = 0
 
     for restriccion in variable.list_restr:
-        posicion = variable.pos_init[0] - restricción.pos_init[0]
+        posicion = variable.pos_init[0] - restriccion.pos_init[0]
         podas = []
 
         for pal_dom in restriccion.dominio.lista:
@@ -104,15 +109,15 @@ def forward_checking(variable, indice_var):
     for i, pal_dom in enumerate(variable.dominio.lista):
         variable.nombre = pal_dom
 
-        if ajusta_dominio(variable) == true:
+        if ajusta_dominio(variable) == True:
             indice_var = indice_var + 1
 
             if forward_checking(var_horiz[indice_var], indice_var) == True:
                 return True
             else:
-                restaura_dominios(variable)
+                restaura_dominio(variable)
         else:
-            restaura_dominios(variable)
+            restaura_dominio(variable)
         
         if i  == len(variable.dominio.lista) - 1:
             return False
