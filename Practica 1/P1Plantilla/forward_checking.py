@@ -1,3 +1,4 @@
+#Alejandro Guillén Merino           48790456-G
 from tablero import *
 from variable import *
 from dominio import *
