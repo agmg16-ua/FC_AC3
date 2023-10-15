@@ -15,7 +15,7 @@ class Variable:
         dom = 0
         for dom_alm in almacen:
             if dom_alm.tam == tamanyo:
-                self.dominio = dom_alm
+                self.dominio.lista = dom_alm.lista.copy()
                 dom = 1
     
 

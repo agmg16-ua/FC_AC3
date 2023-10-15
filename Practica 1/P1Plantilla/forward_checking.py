@@ -12,7 +12,7 @@ def inicializar_variables(tablero, almacen):
     pos_fin = [-1, -1]
     indice_var = 0
     
-    #Variables verticales
+    #Variables horizontales
     for i in range (tablero.alto):
         for j in range (tablero.ancho):
             if tablero.getCelda(i, j) == '-':
@@ -23,6 +23,7 @@ def inicializar_variables(tablero, almacen):
                 
                 if j == tablero.ancho-1:
                     var_aux = Variable("H"+str(indice_var), pos_fin[1]-pos_inic[1]+1, pos_inic, pos_fin, almacen)
+                    #crear_dominio(var_aux)
                     indice_var = indice_var + 1
                     var_horiz.append(var_aux)
                     pos_inic = [-1, -1]
@@ -37,7 +38,7 @@ def inicializar_variables(tablero, almacen):
                     pos_fin = [-1, -1]
     
     indice_var = 0
-    #Variables horizontales
+    #Variables verticales
     for j in range (tablero.ancho):
         for i in range (tablero.alto):
             if tablero.getCelda(i, j) == '-':
@@ -85,11 +86,15 @@ def ajusta_dominio(variable):
     indice = 0
 
     for restriccion in variable.list_restr:
+        #print(restriccion.nombre)
         posicion = variable.pos_init[0] - restriccion.pos_init[0]
         podas = []
 
         for pal_dom in restriccion.dominio.lista:
-            if pal_dom[posicion] != variable.nombre[indice]:
+            #print(pal_dom)
+            #print(pal_dom[posicion] + ' ' + variable.palabra[indice])
+            if pal_dom[posicion] != variable.palabra[indice]:
+                #print("ENTRAAAAAAAAAAAAAAAAA")
                 podas.append(pal_dom)
             
         for eliminar in podas:
@@ -98,6 +103,8 @@ def ajusta_dominio(variable):
         indice = indice + 1
 
         restriccion.dom_elim.append(podas)
+        #print(" ")
+        #print(" ")
     
     for restriccion in variable.list_restr:
         if len(restriccion.dominio.lista) == 0:
@@ -107,22 +114,34 @@ def ajusta_dominio(variable):
 
 def forward_checking(variable, indice_var):
     for i, pal_dom in enumerate(variable.dominio.lista):
-        variable.nombre = pal_dom
+        #print(variable.nombre + ' ' + str(indice_var))
+        variable.palabra = pal_dom
 
         if ajusta_dominio(variable) == True:
-            indice_var = indice_var + 1
+            #print("holaa")
+            if indice_var != len(var_horiz) - 1:
+                indice_var = indice_var + 1
 
-            if forward_checking(var_horiz[indice_var], indice_var) == True:
-                return True
+                if forward_checking(var_horiz[indice_var], indice_var) == True:
+                    return True
+                
+                else:
+                    restaura_dominio(variable)
+                    indice_var = indice_var - 1
             else:
-                restaura_dominio(variable)
+                return True
         else:
             restaura_dominio(variable)
         
         if i  == len(variable.dominio.lista) - 1:
             return False
         
-        
+def llenar_tablero(tablero):
+    for variable in var_horiz:
+        posicion = variable.pos_init
+
+        for i in range(variable.tamanyo):
+            tablero.setCelda(posicion[0], posicion[1]+i, variable.palabra[i])
 
 def preparando(tablero, almacen):
     var_horiz.clear()
@@ -135,9 +154,12 @@ def preparando(tablero, almacen):
     solucion = forward_checking(var_horiz[0], 0)
 
     if solucion == True:
-        print("Se ha solucionado el crucigrama")
+        print("Se ha solucionado el crucigramaaaaa")
+        llenar_tablero(tablero)
+        return True
     else:
-        print("No se ha solucionado el crucigrama")
+        print("No se ha solucionado el crucigramaaaaa")
+        return False
 
 
 
