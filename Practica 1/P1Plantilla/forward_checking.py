@@ -7,7 +7,7 @@ var_horiz = []
 var_vert = []
 
 def inicializar_variables(tablero, almacen):
-        #Creación de las variables
+    #Creación de las variables
     pos_inic = [-1, -1]
     pos_fin = [-1, -1]
     indice_var = 0
@@ -23,7 +23,6 @@ def inicializar_variables(tablero, almacen):
                 
                 if j == tablero.ancho-1:
                     var_aux = Variable("H"+str(indice_var), pos_fin[1]-pos_inic[1]+1, pos_inic, pos_fin, almacen)
-                    #crear_dominio(var_aux)
                     indice_var = indice_var + 1
                     var_horiz.append(var_aux)
                     pos_inic = [-1, -1]
@@ -86,15 +85,11 @@ def ajusta_dominio(variable):
     indice = 0
 
     for restriccion in variable.list_restr:
-        #print(restriccion.nombre)
         posicion = variable.pos_init[0] - restriccion.pos_init[0]
         podas = []
 
         for pal_dom in restriccion.dominio.lista:
-            #print(pal_dom)
-            #print(pal_dom[posicion] + ' ' + variable.palabra[indice])
             if pal_dom[posicion] != variable.palabra[indice]:
-                #print("ENTRAAAAAAAAAAAAAAAAA")
                 podas.append(pal_dom)
             
         for eliminar in podas:
@@ -103,8 +98,6 @@ def ajusta_dominio(variable):
         indice = indice + 1
 
         restriccion.dom_elim.append(podas)
-        #print(" ")
-        #print(" ")
     
     for restriccion in variable.list_restr:
         if len(restriccion.dominio.lista) == 0:
@@ -114,11 +107,9 @@ def ajusta_dominio(variable):
 
 def forward_checking(variable, indice_var):
     for i, pal_dom in enumerate(variable.dominio.lista):
-        #print(variable.nombre + ' ' + str(indice_var))
         variable.palabra = pal_dom
 
         if ajusta_dominio(variable) == True:
-            #print("holaa")
             if indice_var != len(var_horiz) - 1:
                 indice_var = indice_var + 1
 
@@ -154,11 +145,11 @@ def preparando(tablero, almacen):
     solucion = forward_checking(var_horiz[0], 0)
 
     if solucion == True:
-        print("Se ha solucionado el crucigramaaaaa")
+        print("Se ha solucionado el crucigrama")
         llenar_tablero(tablero)
         return True
     else:
-        print("No se ha solucionado el crucigramaaaaa")
+        print("No se ha solucionado el crucigrama")
         return False
 
 
