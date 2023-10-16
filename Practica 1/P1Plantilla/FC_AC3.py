@@ -13,11 +13,29 @@ cola_eliminados_ac3 = []
 ######################################################################### 
 # Creación de variables
 ######################################################################### 
+def palabra_con_letra(variable, lista_letras):
+    if variable.nombre == "H0":
+        print(variable.dominio.lista)
+        print(lista_letras)
+    eliminar = []
+
+    for letra in lista_letras:
+        for palabra in variable.dominio.lista:
+            if letra[0] != palabra[letra[1]]:
+                eliminar.append(palabra)
+    
+    for elemento in eliminar:
+        if elemento in variable.dominio.lista:
+            variable.dominio.lista.remove(elemento)
+    
+
 def inicializar_variables(tablero, almacen):
     #Creación de las variables
     pos_inic = [-1, -1]
     pos_fin = [-1, -1]
     indice_var = 0
+    tiene_letra = False
+    letra_pos = []
     
     #Variables horizontales
     for i in range (tablero.alto):
@@ -31,17 +49,56 @@ def inicializar_variables(tablero, almacen):
                 if j == tablero.ancho-1:
                     var_aux = Variable("H"+str(indice_var), pos_fin[1]-pos_inic[1]+1, pos_inic, pos_fin, almacen)
                     indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+
+
                     var_horiz.append(var_aux)
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
                 
-            else:
+            elif tablero.getCelda(i, j) == '*':
                 if pos_inic != [-1, -1]:
                     var_aux = Variable("H"+str(indice_var), pos_fin[1]-pos_inic[1]+1, pos_inic, pos_fin, almacen)
                     indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+
+
                     var_horiz.append(var_aux)
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
+            
+            else:
+                tiene_letra = True
+
+                if pos_inic == [-1, -1]:
+                    pos_inic = [i, j]
+                
+                pos_fin = [i, j]
+                letra_pos.append([tablero.getCelda(i, j), j - pos_inic[1]])
+
+                if j == tablero.ancho-1:
+                    var_aux = Variable("H"+str(indice_var), pos_fin[1]-pos_inic[1]+1, pos_inic, pos_fin, almacen)
+                    indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+                    
+                    var_horiz.append(var_aux)
+                    pos_inic = [-1, -1]
+                    pos_fin = [-1, -1]
+
+
+
     
     indice_var = 0
     #Variables verticales
@@ -56,14 +113,48 @@ def inicializar_variables(tablero, almacen):
                 if i == tablero.alto-1:
                     var_aux = Variable("V"+str(indice_var), pos_fin[0]-pos_inic[0]+1, pos_inic, pos_fin, almacen)
                     indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+
                     var_vert.append(var_aux)
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
                 
-            else:
+            elif tablero.getCelda(i, j) == '*':
                 if pos_inic != [-1, -1]:
                     var_aux = Variable("V"+str(indice_var), pos_fin[0]-pos_inic[0]+1, pos_inic, pos_fin, almacen)
                     indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+
+                    var_vert.append(var_aux)
+                    pos_inic = [-1, -1]
+                    pos_fin = [-1, -1]
+            
+            else:
+                tiene_letra = True
+
+                if pos_inic == [-1, -1]:
+                    pos_inic = [i, j]
+                
+                pos_fin = [i, j]
+                letra_pos.append([tablero.getCelda(i, j), i - pos_inic[0]])
+
+                if i == tablero.alto-1:
+                    var_aux = Variable("V"+str(indice_var), pos_fin[0]-pos_inic[0]+1, pos_inic, pos_fin, almacen)
+                    indice_var = indice_var + 1
+
+                    if tiene_letra == True:
+                        palabra_con_letra(var_aux, letra_pos)
+                        tiene_letra = False
+                        letra_pos = []
+                    
                     var_vert.append(var_aux)
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
@@ -166,9 +257,6 @@ def ac3():
 
     crear_cola_restricciones()
 
-    #for elemento in cola_ac3:
-    #    print("[" + elemento[0].nombre + ", " + elemento[1].nombre + "]")
-
     #Aqui inicia AC3
     while cola_ac3:
         cambio = False
@@ -232,13 +320,17 @@ def llenar_tablero(tablero):
 # Métodos de preparación
 ######################################################################### 
 def preparando_forward(tablero, almacen, ac3):
-    
+    print(tablero)
     if ac3 == False:
-        print("HOLA")
+
         var_horiz.clear()
         var_vert.clear()
 
         inicializar_variables(tablero, almacen)
+
+        for variable in var_horiz:
+            print(variable.nombre)
+            print(variable.dominio.lista)
 
         crear_restricciones()
 
@@ -274,7 +366,3 @@ def preparando_ac3(tablero, almacen):
     else:
         print("AC3 no ha terminado bien")
         return False
-
-
-
-
