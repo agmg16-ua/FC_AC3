@@ -97,8 +97,6 @@ def inicializar_variables(tablero, almacen):
                     pos_inic = [-1, -1]
                     pos_fin = [-1, -1]
 
-
-
     
     indice_var = 0
     #Variables verticales
@@ -303,8 +301,6 @@ def ac3():
     return True
     
 
-
-
 ######################################################################### 
 # Método para llenar el tablero con las palabras
 #########################################################################  
@@ -320,17 +316,13 @@ def llenar_tablero(tablero):
 # Métodos de preparación
 ######################################################################### 
 def preparando_forward(tablero, almacen, ac3):
-    print(tablero)
+
     if ac3 == False:
 
         var_horiz.clear()
         var_vert.clear()
 
         inicializar_variables(tablero, almacen)
-
-        for variable in var_horiz:
-            print(variable.nombre)
-            print(variable.dominio.lista)
 
         crear_restricciones()
 
