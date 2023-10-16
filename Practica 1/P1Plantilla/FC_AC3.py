@@ -8,6 +8,7 @@ var_horiz = []
 var_vert = []
 
 cola_ac3 = []
+cola_eliminados_ac3 = []
 
 ######################################################################### 
 # Creación de variables
@@ -160,15 +161,60 @@ def crear_cola_restricciones():
             cola_ac3.append([variableV, restriccion])
 
 def ac3():
+    print("\n--DOMINIOS ANTES DE AC3")
     imprimir_ac3()
 
     crear_cola_restricciones()
 
-    for elemento in cola_ac3:
-        print("[" + elemento[0].nombre + ", " + elemento[1].nombre + "]")
+    #for elemento in cola_ac3:
+    #    print("[" + elemento[0].nombre + ", " + elemento[1].nombre + "]")
 
     #Aqui inicia AC3
-    #while len(co)
+    while cola_ac3:
+        cambio = False
+        variable_borrar = cola_ac3[0][0]
+        variable_mirar = cola_ac3[0][1]
+
+        #Posicion de interseccion de las palabras
+        posicion_H = variable_borrar.list_restr.index(variable_mirar)
+        posicion_V = variable_mirar.list_restr.index(variable_borrar)
+
+        podar = []
+
+        #Comprobar si cada palabra del dominio es valida
+        for palabraH in variable_borrar.dominio.lista:
+            existe_palabra = False
+            for palabraV in variable_mirar.dominio.lista:
+                if palabraH[posicion_H] == palabraV[posicion_V]:
+                    existe_palabra = True
+            
+            if existe_palabra == False:
+                cambio = True
+                podar.append(palabraH)
+        
+        #Elminar palabras no validas
+        for palabra in podar:
+            variable_borrar.dominio.lista.remove(palabra)
+        
+        if len(variable_borrar.dominio.lista) == 0:
+            return False
+        
+        if cambio == True:
+            rescatar = []
+            for pareja in cola_eliminados_ac3:
+                if pareja[1] == variable_borrar:
+                    rescatar.append(pareja)      
+
+            for pareja in rescatar:
+                cola_ac3.append(pareja)
+                cola_eliminados_ac3.remove(pareja)
+
+        cola_eliminados_ac3.append(cola_ac3[0])
+        cola_ac3.remove(cola_ac3[0])  
+    
+    return True
+    
+
 
 
 ######################################################################### 
@@ -206,15 +252,21 @@ def preparando_forward(tablero, almacen, ac3):
         print("No se ha solucionado el crucigrama")
         return False
 
+
 def preparando_ac3(tablero, almacen):
     var_horiz.clear()
     var_vert.clear()
+    cola_ac3.clear()
+    cola_eliminados_ac3.clear()
 
     inicializar_variables(tablero, almacen)
 
     crear_restricciones()
 
     solucion = ac3()
+
+    print("\n--DOMINIOS DESPUES DE AC3")
+    imprimir_ac3()
 
     if solucion == True:
         print("AC3 ha finalizado de manera satisfactoria")
