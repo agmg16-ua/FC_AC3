@@ -5,7 +5,7 @@ from tkinter.simpledialog import *
 from tkinter import messagebox as MessageBox
 from tablero import *
 from dominio import *
-from forward_checking import * #archivo con forward checking
+from FC_AC3 import * #archivo con forward checking y ac3
 from pygame.locals import *
 
 GREY=(190, 190, 190)
@@ -15,8 +15,8 @@ BLANCO=(255, 255, 255)
 MARGEN=5 #ancho del borde entre celdas
 MARGEN_INFERIOR=60 #altura del margen inferior entre la cuadrícula y la ventana
 TAM=60  #tamaño de la celda
-FILS=5 # número de filas del crucigrama 5
-COLS=6 # número de columnas del crucigrama 6
+FILS=3 # número de filas del crucigrama 5
+COLS=3 # número de columnas del crucigrama 6
 
 LLENA='*' 
 VACIA='-'
@@ -132,6 +132,11 @@ def main():
     almacen=creaAlmacen()
     game_over=False
     tablero=Tablero(FILS, COLS)    
+
+    #######################################################
+    ac3 = False
+    #######################################################
+
     while not game_over:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:               
@@ -142,11 +147,17 @@ def main():
                 if pulsaBotonFC(pos, anchoVentana, altoVentana):
                     print("FC")
                     res=False 
-                    res = preparando(tablero, almacen)#aquí llamar al forward checking
+                    res = preparando_forward(tablero, almacen, ac3)#aquí llamar al forward checking
                     if res==False:
-                        MessageBox.showwarning("Alerta", "No hay solución")                                  
+                        MessageBox.showwarning("Alerta FC", "No hay solución (Forward checking)") 
+                    ac3 = False                               
                 elif pulsaBotonAC3(pos, anchoVentana, altoVentana):                    
-                     print("AC3")
+                    print("AC3")
+                    res = False
+                    res = preparando_ac3(tablero, almacen)
+                    if res == False:
+                        MessageBox.showwarning("Alerta AC3", "No hay solución (AC3)")                        
+                    ac3 = True
                 elif pulsaBotonReset(pos, anchoVentana, altoVentana):                   
                     tablero.reset()
                 elif inTablero(pos):

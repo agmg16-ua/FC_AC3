@@ -7,6 +7,11 @@ from main import *
 var_horiz = []
 var_vert = []
 
+cola_ac3 = []
+
+######################################################################### 
+# Creación de variables
+######################################################################### 
 def inicializar_variables(tablero, almacen):
     #Creación de las variables
     pos_inic = [-1, -1]
@@ -74,6 +79,10 @@ def crear_restricciones():
                         hor.list_restr.append(ver)
                         ver.list_restr.append(hor)
 
+
+######################################################################### 
+# Métodos de Forward Checking
+######################################################################### 
 def restaura_dominio(variable):
     for restriccion in variable.list_restr:
         restaurar = restriccion.dom_elim[len(restriccion.dom_elim)-1]
@@ -81,6 +90,7 @@ def restaura_dominio(variable):
             restriccion.dominio.lista.append(palabra)
         
         restriccion.dom_elim.pop()
+
 
 def ajusta_dominio(variable):
     indice = 0
@@ -106,6 +116,7 @@ def ajusta_dominio(variable):
     
     return True
 
+
 def forward_checking(variable, indice_var):
     for i, pal_dom in enumerate(variable.dominio.lista):
         variable.palabra = pal_dom
@@ -117,9 +128,8 @@ def forward_checking(variable, indice_var):
                 if forward_checking(var_horiz[indice_var], indice_var) == True:
                     return True
                 
-                else:
-                    restaura_dominio(variable)
-                    indice_var = indice_var - 1
+                restaura_dominio(variable)
+                indice_var = indice_var - 1
             else:
                 return True
         else:
@@ -127,7 +137,43 @@ def forward_checking(variable, indice_var):
         
         if i  == len(variable.dominio.lista) - 1:
             return False
-        
+
+
+######################################################################### 
+# Métodos de AC3
+######################################################################### 
+def imprimir_ac3():
+    for variable in var_horiz:
+        print("Nombre: " + variable.nombre + "; Posicion: [" + str(variable.pos_init[0]) + ", " + str(variable.pos_init[1]) + "]; Tipo: Horizontal; Dominio: [" + ", ".join(variable.dominio.lista) + ']')
+
+    for variable in var_vert:
+        print("Nombre: " + variable.nombre + "; Posicion: [" + str(variable.pos_init[0]) + ", " + str(variable.pos_init[1]) + "]; Tipo: Vertical; Dominio: [" + ", ".join(variable.dominio.lista) + ']')
+
+
+def crear_cola_restricciones():
+    for variableH in var_horiz:
+        for restriccion in variableH.list_restr:
+            cola_ac3.append([variableH, restriccion])
+    
+    for variableV in var_vert:
+        for restriccion in variableV.list_restr:
+            cola_ac3.append([variableV, restriccion])
+
+def ac3():
+    imprimir_ac3()
+
+    crear_cola_restricciones()
+
+    for elemento in cola_ac3:
+        print("[" + elemento[0].nombre + ", " + elemento[1].nombre + "]")
+
+    #Aqui inicia AC3
+    #while len(co)
+
+
+######################################################################### 
+# Método para llenar el tablero con las palabras
+#########################################################################  
 def llenar_tablero(tablero):
     for variable in var_horiz:
         posicion = variable.pos_init
@@ -135,13 +181,20 @@ def llenar_tablero(tablero):
         for i in range(variable.tamanyo):
             tablero.setCelda(posicion[0], posicion[1]+i, variable.palabra[i])
 
-def preparando(tablero, almacen):
-    var_horiz.clear()
-    var_vert.clear()
 
-    inicializar_variables(tablero, almacen)
+######################################################################### 
+# Métodos de preparación
+######################################################################### 
+def preparando_forward(tablero, almacen, ac3):
+    
+    if ac3 == False:
+        print("HOLA")
+        var_horiz.clear()
+        var_vert.clear()
 
-    crear_restricciones()
+        inicializar_variables(tablero, almacen)
+
+        crear_restricciones()
 
     solucion = forward_checking(var_horiz[0], 0)
 
@@ -151,6 +204,23 @@ def preparando(tablero, almacen):
         return True
     else:
         print("No se ha solucionado el crucigrama")
+        return False
+
+def preparando_ac3(tablero, almacen):
+    var_horiz.clear()
+    var_vert.clear()
+
+    inicializar_variables(tablero, almacen)
+
+    crear_restricciones()
+
+    solucion = ac3()
+
+    if solucion == True:
+        print("AC3 ha finalizado de manera satisfactoria")
+        return True
+    else:
+        print("AC3 no ha terminado bien")
         return False
 
 
