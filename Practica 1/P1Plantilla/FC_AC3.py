@@ -3,6 +3,7 @@ from tablero import *
 from variable import *
 from dominio import *
 from main import *
+import datetime
 
 var_horiz = []
 var_vert = []
@@ -316,7 +317,7 @@ def llenar_tablero(tablero):
 # Métodos de preparación
 ######################################################################### 
 def preparando_forward(tablero, almacen, ac3):
-
+    tiempo_inicio_forward = datetime.datetime.now()
     if ac3 == False:
 
         var_horiz.clear()
@@ -327,13 +328,18 @@ def preparando_forward(tablero, almacen, ac3):
         crear_restricciones()
 
     solucion = forward_checking(var_horiz[0], 0)
+    
+    tiempo_fin_forward = datetime.datetime.now()
+
 
     if solucion == True:
         print("Se ha solucionado el crucigrama")
+        print("Tiempo de Forward Checking: " + str(tiempo_fin_forward - tiempo_inicio_forward))
         llenar_tablero(tablero)
         return True
     else:
         print("No se ha solucionado el crucigrama")
+        print("Tiempo de Forward Checking: " + str(tiempo_fin_forward - tiempo_inicio_forward))
         return False
 
 
@@ -341,6 +347,9 @@ def preparando_ac3(tablero, almacen):
     var_horiz.clear()
     var_vert.clear()
     cola_ac3.clear()
+
+    tiempo_inicio_ac3 = datetime.datetime.now()
+
     cola_eliminados_ac3.clear()
 
     inicializar_variables(tablero, almacen)
@@ -352,9 +361,13 @@ def preparando_ac3(tablero, almacen):
     print("\n--DOMINIOS DESPUES DE AC3")
     imprimir_ac3()
 
+    tiempo_fin_ac3 = datetime.datetime.now()
+
     if solucion == True:
         print("AC3 ha finalizado de manera satisfactoria")
+        print("Tiempo de AC3: " + str(tiempo_fin_ac3 - tiempo_inicio_ac3))
         return True
     else:
         print("AC3 no ha terminado bien")
+        print("Tiempo de AC3: " + str(tiempo_fin_ac3 - tiempo_inicio_ac3))
         return False
