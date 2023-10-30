@@ -75,7 +75,7 @@ def busca(almacen, tam):
 # Crea un almacen de palabras
 ######################################################################### 
 def creaAlmacen():
-    f= open('d_peq.txt', 'r', encoding="utf-8")
+    f= open('d0.txt', 'r', encoding="utf-8") # Cambiar el nombre del fichero
     lista=f.read()
     f.close()
     listaPal=lista.split()
