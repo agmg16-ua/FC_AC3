@@ -75,7 +75,7 @@ class DecisionStump:
     ## Constructor de clase, con número de características
     def __init__(self, n_features):
         # Seleccionar al azar una característica, un umbral y una polaridad.
-        self.caracteristica = random.randint(1, n_features)
+        self.caracteristica = random.randint(0, n_features - 1)
         self.umbral = np.random.rand()
         self.polaridad = np.random.choice([-1, 1])
 
@@ -88,16 +88,22 @@ class DecisionStump:
         """
         predicciones = []
         for x in (X):
+            
             if (x[self.caracteristica] > self.umbral and self.polaridad == 1) or (x[self.caracteristica] < self.umbral and self.polaridad == -1):
                 predicciones.append(1)
             else:
                 predicciones.append(-1)
 
         return predicciones
+        
         """
+        #print("self.caracteristica = " + str(self.caracteristica))
         caracteristicas_seleccionadas = X[:, self.caracteristica]
         predicciones = np.where(self.polaridad * caracteristicas_seleccionadas > self.polaridad * self.umbral, 1, -1)
+        
         return predicciones
+                
+        
         
 
 ##ADABOOST
@@ -125,7 +131,7 @@ class Adaboost:
             clasificadoresT = []
             erroresT = []
             alphasT = []
-            
+
             # Bucle de búsqueda de un buen clasificador débil: desde 1 hasta A repetir
             for a in range(self.A):
                 # Crear un nuevo clasificador débil aleatorio
@@ -146,7 +152,7 @@ class Adaboost:
                     mejorError = error
                 
             # Calcular el valor de alfa y las predicciones del mejor clasificador débil
-            alpha = 0.5 * np.log2((1 - mejorError) / (mejorError + 1e-10))
+            alpha = 0.5 * np.log((1 - mejorError) / mejorError)
             alphasT.append(alpha)
 
             # Actualizar pesos de las observaciones en función de las predicciones, los valores deseados y alfa
@@ -168,9 +174,19 @@ class Adaboost:
     def predict(self, X):
         # Calcular las predicciones de cada clasificador débil para cada input multiplicadas por su alfa
         # Sumar para cada input todas las predicciones ponderadas y decidir la clase en función del signo
+        """
         predicciones = []
         for x in (X):
             predicciones.append(np.sign(np.sum([alpha * clasificador.predict(x) for alpha, clasificador in zip(self.alphas, self.classifiers)])))
+        return predicciones
+        """
+        """
+        aux = np.array([predicciones.predict(X) for predicciones, alfas in zip(self.classifiers, self.alphas)])
+        predicciones = np.sign(np.sum(aux, axis=0))
+        return predicciones
+        """
+        aux = np.array([alpha * clasificador.predict(X) for alpha, clasificador in zip(self.alphas, self.classifiers)])
+        predicciones = np.sign(np.sum(aux, axis=0))
         return predicciones
 
 
@@ -213,8 +229,8 @@ def train_and_evaluate(clase, T, A, verbose=False):
     y_test_pred = adaboost.predict(X_test)
 
     # Calcular las tasas de acierto para los datos de entrenamiento y test
-    y_train_accuracy = y_train_pred.mean()
-    y_test_accuracy = y_test_pred.mean()
+    y_train_accuracy = np.mean(y_train_pred == Y_train_clase)
+    y_test_accuracy = np.mean(y_test_pred == Y_test_clase)
 
     # Imprimir las tasas de acierto
     print("Tasa de acierto (train, test) en datos de entrenamiento y tiempo: {:.2f}%, {:.2f}%, {:.3f} segundos".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
@@ -222,4 +238,4 @@ def train_and_evaluate(clase, T, A, verbose=False):
 #Main
 if __name__ == "__main__":
     # Entrenar y evaluar el clasificador Adaboost para la clase 1 con T = 5 y A = 20
-    train_and_evaluate(1, 5, 20, verbose=True)
+    train_and_evaluate(8, 20, 10, verbose=True)
