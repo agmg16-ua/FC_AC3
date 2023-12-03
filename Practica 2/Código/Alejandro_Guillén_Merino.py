@@ -243,24 +243,6 @@ def tareas_1A_y_1B_adaboost_binario(clase, T, A, verbose=False, graph=False):
         return y_test_accuracy, total_time
 
 def tarea_1C_graficas_rendimiento(rend_1A):
-    print("Tarea1C")
-
-def tarea_1D_adaboost_multiclase(T, A):
-    print("MULTICLASE")
-
-
-#Main
-if __name__ == "__main__":
-    ## Las llamadas a funciones auxiliares que sean relevantes para algo
-    ## en la evaluación pueden dejarse comentadas en esta sección.
-    # test_DecisionStump(9, 59, 0.4354, 1)
-
-    rend_1A = tareas_1A_y_1B_adaboost_binario(clase=9, T=15, A=15, verbose=True)
-    
-    # tarea_1C_graficas_rendimiento(rend_1A)
-    ## Una parte de la tarea 1C es fijar los parámetro más adecuados
-    ## Se puede implementar reusando el código de las tareas 1A y 1B
-    #tareas_1A_y_1B_adaboost_binario(clase=9, T=incognita, A=incognita)
     valores_T = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
     valores_A = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
     
@@ -305,9 +287,63 @@ if __name__ == "__main__":
     print("Se han establecido los valores de T=60 y A=15 como los óptimos\n")
     t_optimo = 60
     a_optimo = 15
+
+    return t_optimo, a_optimo
+
+def tarea_1D_adaboost_multiclase(T, A):
+    # Cargar los datos de entrenamiento y test tal y como nos los sirve keras (MNIST de Yann Lecun)
+    X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
+
+    #Se definen todas las clases
+    clases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+    for clase in clases:
+        #Filtra los datos de entrenamiento y test para quedarnos solo con la clase que queremos
+        Y_train_clase = (Y_train == clase).astype(int)*2 - 1
+        Y_test_clase = (Y_test == clase).astype(int)*2 - 1  
+
+        adaboost = Adaboost(T, A)
+        #if verbose:
+        #    print("Entrenando clasificador Adaboost para el digito = " + str(clase) + " con T = " + str(T) + " y A = " + str(A) + "...")
+
+        start = time.time()
+        adaboost.fit(X_train, Y_train_clase, True)
+        end = time.time()
+        total_time = end - start
+
+        # Obtener las predicciones del clasificador Adaboost para los datos de entrenamiento y test
+        y_train_pred = adaboost.predict(X_train)
+        y_test_pred = adaboost.predict(X_test)
+
+        # Calcular las tasas de acierto para los datos de entrenamiento y test
+        y_train_accuracy = np.mean(y_train_pred == Y_train_clase)
+        y_test_accuracy = np.mean(y_test_pred == Y_test_clase)
+
+        # Imprimir las tasas de acierto
+        #if verbose:
+        #print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
+        
+
+
+#Main
+if __name__ == "__main__":
+    ## Las llamadas a funciones auxiliares que sean relevantes para algo
+    ## en la evaluación pueden dejarse comentadas en esta sección.
+    # test_DecisionStump(9, 59, 0.4354, 1)
+
+    rend_1A = tareas_1A_y_1B_adaboost_binario(clase=9, T=15, A=15, verbose=True)
     
+    ## Una parte de la tarea 1C es fijar los parámetro más adecuados
+
+    
+    valorT, valorA = tarea_1C_graficas_rendimiento(rend_1A)
+
+    ## Se puede implementar reusando el código de las tareas 1A y 1B
+    #tareas_1A_y_1B_adaboost_binario(clase=9, T=incognita, A=incognita)
+    
+    
+    rend_1D = tarea_1D_adaboost_multiclase(T=valorT, A=valorA)
     """
-    rend_1D = tarea_1D_adaboost_multiclase(T=incognita, A=incognita)
     #rend_1E = tarea_1E_adaboost_multiclase_mejorado(T=incognita, A=incognita)
     #tarea_1E_graficas_rendimiento(rend_1D, rend_1E)
     
