@@ -152,7 +152,7 @@ class Adaboost:
                     mejorError = error
                 
             # Calcular el valor de alfa y las predicciones del mejor clasificador débil
-            alpha = 0.5 * np.log((1 - mejorError) / mejorError)
+            alpha = 0.5 * np.log2((1 - mejorError) / mejorError)
             alphasT.append(alpha)
 
             # Actualizar pesos de las observaciones en función de las predicciones, los valores deseados y alfa
@@ -190,7 +190,7 @@ class Adaboost:
         return predicciones
 
 
-def train_and_evaluate(clase, T, A, verbose=False):
+def tareas_1A_y_1B_adaboost_binario(clase, T, A, verbose=False, graph=False):
     # Cargar los datos de entrenamiento y test tal y como nos los sirve keras (MNIST de Yann Lecun)
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost()
 
@@ -206,12 +206,15 @@ def train_and_evaluate(clase, T, A, verbose=False):
 
     #Crea un clasificador Adaboost con los parámetros T y A y lo entrena con los datos de entrenamiento
     adaboost = Adaboost(T, A)
-    print("Entrenando clasificador Adaboost para el digito = " + str(clase) + " con T = " + str(T) + " y A = " + str(A) + "...")
+    if verbose:
+        print("Entrenando clasificador Adaboost para el digito = " + str(clase) + " con T = " + str(T) + " y A = " + str(A) + "...")
     start = time.time()
     adaboost.fit(X_train, Y_train_clase, verbose)
     end = time.time()
     total_time = end - start
-    print("Tiempo de entrenamiento: {:.2f} segundos".format(total_time))
+
+    if verbose:
+        print("Tiempo de entrenamiento: {:.2f} segundos".format(total_time))
 
     """
     decisionStump = DecisionStump(784)
@@ -233,9 +236,88 @@ def train_and_evaluate(clase, T, A, verbose=False):
     y_test_accuracy = np.mean(y_test_pred == Y_test_clase)
 
     # Imprimir las tasas de acierto
-    print("Tasa de acierto (train, test) en datos de entrenamiento y tiempo: {:.2f}%, {:.2f}%, {:.3f} segundos".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
+    if verbose:
+        print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
+
+    if graph:
+        return y_test_accuracy, total_time
+
+def tarea_1C_graficas_rendimiento(rend_1A):
+    print("Tarea1C")
+
+def tarea_1D_adaboost_multiclase(T, A):
+    print("MULTICLASE")
+
 
 #Main
 if __name__ == "__main__":
-    # Entrenar y evaluar el clasificador Adaboost para la clase 1 con T = 5 y A = 20
-    train_and_evaluate(8, 20, 10, verbose=True)
+    ## Las llamadas a funciones auxiliares que sean relevantes para algo
+    ## en la evaluación pueden dejarse comentadas en esta sección.
+    # test_DecisionStump(9, 59, 0.4354, 1)
+
+    rend_1A = tareas_1A_y_1B_adaboost_binario(clase=9, T=15, A=15, verbose=True)
+    
+    # tarea_1C_graficas_rendimiento(rend_1A)
+    ## Una parte de la tarea 1C es fijar los parámetro más adecuados
+    ## Se puede implementar reusando el código de las tareas 1A y 1B
+    #tareas_1A_y_1B_adaboost_binario(clase=9, T=incognita, A=incognita)
+    valores_T = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
+    valores_A = [5, 10, 15, 20, 25, 30, 40, 50, 75, 100]
+    
+    tasa_acierto_train = []
+    tiempos_train = []
+
+    for T in valores_T:
+        tasa_acierto_aux = []
+        tiempos_aux = []
+
+        for A in valores_A:
+            rendimiento, tiempo = tareas_1A_y_1B_adaboost_binario(clase=9, T=T, A=A, verbose=False, graph=True)
+            tasa_acierto_aux.append(rendimiento)
+            tiempos_aux.append(tiempo)
+        
+        tiempos_train.append(np.mean(tiempos_aux))
+        tasa_acierto_train.append(np.mean(tasa_acierto_aux))
+
+    fig, ax1 = plt.subplots()
+
+    # Configurar el eje izquierdo (tasa de acierto)
+    color = 'tab:blue'
+    ax1.set_xlabel('Valores de T')
+    ax1.set_ylabel('Tasa de Acierto', color=color)
+    ax1.plot(valores_T, tasa_acierto_train, color=color, label='Tasa de Acierto')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.legend(loc='upper left')
+
+    # Crear el eje derecho (tiempo)
+    ax2 = ax1.twinx()
+    color = 'tab:red'
+    ax2.set_ylabel('Tiempo', color=color)
+    ax2.plot(valores_T, tiempos_train, color=color, label='Tiempo')
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.legend(loc='upper right')
+
+    # Ajustar el diseño y mostrar el gráfico
+    fig.tight_layout()
+    plt.title('Gráfica de Tasa de Acierto y Tiempo')
+    plt.savefig('Grafica_Entrenamiento.png')
+    print("\nSe ha guardado la gráfica de entrenamiento en el archivo Grafica_Entrenamiento.png")
+    print("Se han establecido los valores de T=60 y A=15 como los óptimos\n")
+    t_optimo = 60
+    a_optimo = 15
+    
+    """
+    rend_1D = tarea_1D_adaboost_multiclase(T=incognita, A=incognita)
+    #rend_1E = tarea_1E_adaboost_multiclase_mejorado(T=incognita, A=incognita)
+    #tarea_1E_graficas_rendimiento(rend_1D, rend_1E)
+    
+    rend_2A = tarea_2A_AdaBoostClassifier_default(n_estimators=incognita)
+    #tarea_2B_graficas_rendimiento(rend_1E, rend_2A)
+    rend_2C = tarea_2C_AdaBoostClassifier_faster(n_estimators=incognita)
+    #tarea_2C_graficas_rendimiento(rend_2A, rend_2C)
+
+    rend_2D = tarea_2D_AdaBoostClassifier_DecisionTree(incognitas)
+    rend_2E = tarea_2E_MLP_Keras(n_hid_lyrs=incognita, n_nrns_lyr=incognitas)
+    rend_2F = tarea_2F_CNN_Keras(incognitas)    
+    #tarea_2G_graficas_rendimiento(rend_1F, rend_2C, rend_2D, rend_2E, rend_2F)
+    """
