@@ -7,6 +7,21 @@ import numpy as np
 import time as time
 import random as random
 
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.svm import SVC
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+
+import keras
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import to_categorical
+
+import time
+
 #Nos permite cargar los datos de entrenamiento y test
 """
 (X_train, Y_train), (X_test, Y_test) = keras.datasets.mnist.load_data()
@@ -165,8 +180,8 @@ class Adaboost:
                 mensaje = "Añadido clasificador {:>3}: {:>4}, {:>6.4f}, {:+2}, {:>8.6f}".format(t+1, mejorClasificador.caracteristica, mejorClasificador.umbral, mejorClasificador.polaridad, mejorError)
                 print(mensaje)
             
-            if verbose:
-                mensaje = "Iteración {:>3}/{:>3}, Error: {:>8.6f}".format(t+1, self.T, mejorError)
+            #if verbose:
+            #    mensaje = "Iteración {:>3}/{:>3}, Error: {:>8.6f}".format(t+1, self.T, mejorError)
     
     ## Método para obtener una predicción con el clasificador fuerte Adaboost
     def predict(self, X, tipoAdaboost):
@@ -187,7 +202,11 @@ def precision(Y, Y_pred):
     precision = np.sum(Y == Y_pred) / len(Y)
     return precision
 
+## Métodos para las tareas de la práctica
+
 def tareas_1A_y_1B_adaboost_binario(clase, T, A, verbose=False):
+    if verbose:
+        print("****Inicio de tareas_1A_y_1B_adaboost_binario****")
     # Cargar los datos de entrenamiento y test tal y como nos los sirve keras (MNIST de Yann Lecun) para la clase deseada
     X_train, Y_train, X_test, Y_test = load_MNIST_for_adaboost(clase, "Binario")
 
@@ -197,7 +216,7 @@ def tareas_1A_y_1B_adaboost_binario(clase, T, A, verbose=False):
     if verbose:
         print("Entrenando clasificador Adaboost para el digito = " + str(clase) + " con T = " + str(T) + " y A = " + str(A) + "...")
     start = time.time()
-    adaboost.fit(X_train, Y_train, verbose)
+    adaboost.fit(X_train, Y_train)
     end = time.time()
     total_time = end - start
 
@@ -215,10 +234,14 @@ def tareas_1A_y_1B_adaboost_binario(clase, T, A, verbose=False):
     # Imprimir las tasas de acierto
     if verbose:
         print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
+    
+    if verbose:
+        print("****Fin de tareas_1A_y_1B_adaboost_binario****\n")
 
     return y_test_accuracy, total_time
 
 def tarea_1C_graficas_rendimiento(rend_1A):
+    print("****Inicio de tarea_1C_graficas_rendimiento****")
     valores_T = [1, 2, 5, 10, 15, 20, 25, 30, 45]
     valores_A = [1, 2, 5, 10, 15, 20, 25, 30, 45]
     
@@ -260,13 +283,17 @@ def tarea_1C_graficas_rendimiento(rend_1A):
     plt.title('Gráfica de Tasa de Acierto y Tiempo')
     plt.savefig('Grafica_Entrenamiento.png')
     print("\nSe ha guardado la gráfica de entrenamiento en el archivo Grafica_Entrenamiento.png")
-    print("Se han establecido los valores de T=60 y A=15 como los óptimos\n")
+    print("Se han establecido los valores de T=425 y A=2 como los óptimos\n")
     t_optimo = 450
     a_optimo = 2
+
+    print("****Fin de tarea_1C_graficas_rendimiento****\n")
 
     return t_optimo, a_optimo
 
 def tarea_1D_adaboost_multiclase(T, A, verbose=False):
+    if verbose:
+        print("****Inicio de tarea_1D_adaboost_multiclase****")
     #Se definen todas las clases
     clases = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     entrenoAdaboost = []
@@ -281,7 +308,7 @@ def tarea_1D_adaboost_multiclase(T, A, verbose=False):
         if verbose:
             print("Entrenando clasificador Adaboost para el digito = " + str(clase) + " con T = " + str(T) + " y A = " + str(A))
         
-        adaboost.fit(X_train, Y_train_vec[clase], True)
+        adaboost.fit(X_train, Y_train_vec[clase])
         entrenoAdaboost.append(adaboost)
     
     end = time.time()
@@ -299,6 +326,262 @@ def tarea_1D_adaboost_multiclase(T, A, verbose=False):
     if verbose:
         print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
     
+    if verbose:
+        print("****Fin de tarea_1D_adaboost_multiclase****\n")
+    
+    return y_test_accuracy, total_time
+    
+def tarea_2A_AdaBoostClassifier_default(n_estimators, verbose=False):
+    if verbose:
+        print("****Inicio de tarea_2A_AdaBoostClassifier_default****")
+
+    # Cargar el conjunto de datos MNIST
+    X_train, Y_train_vec, X_test, Y_test_vec, Y_train, Y_test = load_MNIST_for_adaboost(10, "Multiclase")
+
+    # Tomar un subconjunto más pequeño del conjunto de datos para acelerar el tiempo de ejecución
+    n_samples = 2000  
+    X_train_subset = X_train[:n_samples]
+    y_train_subset = Y_train[:n_samples]
+    
+    # Escalar los datos (es importante para SVM)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train_subset)
+    X_test_scaled = scaler.transform(X_test)
+    
+    # Crear un clasificador base (SVM lineal en este caso)
+    base_classifier = SVC(kernel='linear', probability=True, C=1.0)
+    
+    # Crear el clasificador Adaboost
+    adaboost_classifier = AdaBoostClassifier(base_classifier, n_estimators=n_estimators, random_state=42)
+
+    # Medir el tiempo de entrenamiento en el subconjunto
+    start_time = time.time()
+    adaboost_classifier.fit(X_train_scaled, y_train_subset)
+    total_time = time.time() - start_time
+
+    if verbose:
+        print("Tiempo de entrenamiento: {:.2f} segundos".format(total_time))
+
+    # Predecir las etiquetas del conjunto de prueba
+    y_train_test = adaboost_classifier.predict(X_train_scaled)
+    y_test_pred = adaboost_classifier.predict(X_test_scaled)
+
+    # Calcular la precisión del clasificador
+    y_train_accuracy = accuracy_score(y_train_subset, y_train_test)
+    y_test_accuracy = accuracy_score(Y_test, y_test_pred)
+
+    if verbose:
+        print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(y_train_accuracy * 100, y_test_accuracy * 100, total_time))
+
+        print("****Fin de tarea_2A_AdaBoostClassifier_default****\n")
+
+    return y_test_accuracy, total_time
+
+def tarea_2B_graficas_rendimiento(rend_1D, rend_2A):
+    print("****Inicio de tarea_2B_graficas_rendimiento****")
+    valores_T = [10, 20, 40]
+    valores_A = [10, 20, 40]
+
+    for i in range (2):
+        tasa_acierto = []
+        tiempos = []
+
+        if i == 0:
+            for T in valores_T:
+                tasa_acierto_aux = []
+                tiempos_aux = []
+
+                for A in valores_A:
+                    rendimiento, tiempo = tarea_1D_adaboost_multiclase(T=T, A=A, verbose=False)
+                        
+                    tasa_acierto_aux.append(rendimiento)
+                    tiempos_aux.append(tiempo)
+                
+                tiempos.append(np.mean(tiempos_aux))
+                tasa_acierto.append(np.mean(tasa_acierto_aux))
+        
+        if i == 1:
+            for A in valores_A:
+                rendimiento, tiempo = tarea_2A_AdaBoostClassifier_default(n_estimators=A)
+
+                tasa_acierto.append(rendimiento)
+                tiempos.append(tiempo)
+
+        fig, ax1 = plt.subplots()
+
+        # Configurar el eje izquierdo (tasa de acierto)
+        color = 'tab:blue'
+        ax1.set_xlabel('Valores de T')
+        ax1.set_ylabel('Tasa de Acierto', color=color)
+        ax1.plot(valores_T, tasa_acierto, color=color, label='Tasa de Acierto')
+        ax1.tick_params(axis='y', labelcolor=color)
+        ax1.legend(loc='upper left')
+
+        # Crear el eje derecho (tiempo)
+        ax2 = ax1.twinx()
+        color = 'tab:red'
+        ax2.set_ylabel('Tiempo', color=color)
+        ax2.plot(valores_T, tiempos, color=color, label='Tiempo')
+        ax2.tick_params(axis='y', labelcolor=color)
+        ax2.legend(loc='upper right')
+
+        # Ajustar el diseño y mostrar el gráfico
+        fig.tight_layout()
+        plt.title('Gráfica de Tasa de Acierto y Tiempo')
+
+        if i == 0:
+            plt.savefig('Grafica_Test_1D.png')
+            print("Se ha guardado la gráfica de test en el archivo Grafica_Test_1D.png")
+        
+        if i == 1:
+            plt.savefig('Grafica_Test_2A.png')
+            print("Se ha guardado la gráfica de test en el archivo Grafica_Test_2A.png")
+
+
+    print("****Fin de tarea_2B_graficas_rendimiento****\n")
+
+    return True
+
+def tarea_2C_AdaBoostClassifier_faster(n_estimators, verbose=False):
+    if verbose:
+        print("****Inicio de tarea_2C_AdaBoostClassifier_faster****")
+    
+    X_train, Y_train_vec, X_test, Y_test_vec, Y_train, Y_test = load_MNIST_for_adaboost(10, "Multiclase")
+    X_train, X_val, Y_train, y_val = train_test_split(X_train, Y_train, test_size=0.2, random_state=42)
+
+    # Configurar el clasificador base (Decision Tree)
+    base_classifier = DecisionTreeClassifier(max_depth=2)
+
+    # Configurar el clasificador Adaboost
+    adaboost_classifier = AdaBoostClassifier(base_classifier, n_estimators=n_estimators, random_state=42)
+
+    # Entrenar el modelo
+    start_time = time.time()
+    adaboost_classifier.fit(X_train, Y_train)
+    total_time = time.time() - start_time
+
+    if verbose:
+        print("Tiempo de entrenamiento: {:.2f} segundos".format(total_time))
+
+    # Realizar predicciones
+    y_train_pred = adaboost_classifier.predict(X_val)
+    y_test_pred = adaboost_classifier.predict(X_test)
+
+    # Calcular la precisión
+    accuracy_train = accuracy_score(y_val, y_train_pred)
+    accuracy_test = accuracy_score(Y_test, y_test_pred)
+
+    if verbose:
+        print("Tasa de acierto (train, test) y tiempo: {:.2f}%, {:.2f}%, {:.3f} s.".format(accuracy_train * 100, accuracy_test * 100, total_time))
+
+    if verbose:
+        print("****Fin de tarea_2C_AdaBoostClassifier_faster****\n")
+
+    return accuracy_test, total_time
+
+def tarea_2C_graficas_rendimiento(rend_2A, rend_2C, calculado_2A=True):
+    print("****Inicio de tarea_2C_graficas_rendimiento****")
+    valores_T = [10, 20, 40]
+    valores_A = [10, 20, 40]
+
+    if calculado_2A == True:
+        print("Se ha calculado la gráfica de test de 2A anteriormente, no se vuelve a calcular")
+    else:
+        tasa_acierto = []
+        tiempos = []
+        for A in valores_A:
+            rendimiento, tiempo = tarea_2A_AdaBoostClassifier_default(n_estimators=A)
+
+            tasa_acierto.append(rendimiento)
+            tiempos.append(tiempo)
+        
+        fig, ax1 = plt.subplots()
+
+        # Configurar el eje izquierdo (tasa de acierto)
+        color = 'tab:blue'
+        ax1.set_xlabel('Valores de T')
+        ax1.set_ylabel('Tasa de Acierto', color=color)
+        ax1.plot(valores_T, tasa_acierto, color=color, label='Tasa de Acierto')
+        ax1.tick_params(axis='y', labelcolor=color)
+        ax1.legend(loc='upper left')
+
+        # Crear el eje derecho (tiempo)
+        ax2 = ax1.twinx()
+        color = 'tab:red'
+        ax2.set_ylabel('Tiempo', color=color)
+        ax2.plot(valores_T, tiempos, color=color, label='Tiempo')
+        ax2.tick_params(axis='y', labelcolor=color)
+        ax2.legend(loc='upper right')
+
+        # Ajustar el diseño y mostrar el gráfico
+        fig.tight_layout()
+        plt.title('Gráfica de Tasa de Acierto y Tiempo')
+
+        plt.savefig('Grafica_Test_2A.png')
+        print("Se ha guardado la gráfica de test en el archivo Grafica_Test_2A.png")
+    
+    tasa_acierto = []
+    tiempos = []
+    for A in valores_A:
+        rendimiento, tiempo = tarea_2C_AdaBoostClassifier_faster(n_estimators=A)
+
+        tasa_acierto.append(rendimiento)
+        tiempos.append(tiempo)
+    
+    fig, ax1 = plt.subplots()
+
+    # Configurar el eje izquierdo (tasa de acierto)
+    color = 'tab:blue'
+    ax1.set_xlabel('Valores de T')
+    ax1.set_ylabel('Tasa de Acierto', color=color)
+    ax1.plot(valores_T, tasa_acierto, color=color, label='Tasa de Acierto')
+    ax1.tick_params(axis='y', labelcolor=color)
+    ax1.legend(loc='upper left')
+
+    # Crear el eje derecho (tiempo)
+    ax2 = ax1.twinx()
+    color = 'tab:red'
+    ax2.set_ylabel('Tiempo', color=color)
+    ax2.plot(valores_T, tiempos, color=color, label='Tiempo')
+    ax2.tick_params(axis='y', labelcolor=color)
+    ax2.legend(loc='upper right')
+
+    # Ajustar el diseño y mostrar el gráfico
+    fig.tight_layout()
+    plt.title('Gráfica de Tasa de Acierto y Tiempo')
+
+    plt.savefig('Grafica_Test_2C.png')
+    print("Se ha guardado la gráfica de test en el archivo Grafica_Test_2C.png")
+    
+    print("***Fin de tarea_2C_graficas_rendimiento***\n")
+
+def tarea_2D_MLP_Keras():
+    print("****Inicio de tarea_2D_MLP_Keras****")
+    X_train, Y_train_vec, X_test, Y_test_vec, Y_train, Y_test = load_MNIST_for_adaboost(10, "Multiclase")
+    Y_train = to_categorical(Y_train, 10)
+    Y_test = to_categorical(Y_test, 10)
+
+    # Construir el modelo MLP
+    model = Sequential()
+    model.add(Dense(256, activation='relu', input_shape=(784,)))
+    model.add(Dense(128, activation='relu'))
+    model.add(Dense(10, activation='softmax'))
+
+    # Compilar el modelo
+    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+    # Entrenar el modelo
+    start_time = time.time()
+    model.fit(X_train.reshape(-1, 784), Y_train, epochs=10, batch_size=128, validation_split=0.2)
+    total_time = time.time() - start_time
+
+    # Evaluar el modelo en el conjunto de prueba
+    loss, accuracy = model.evaluate(X_test.reshape(-1, 784), Y_test)
+    print("Tasa de acierto y tiempo: {:.2f}%, {:.3f} s.".format(accuracy * 100, total_time))
+
+    print("***Fin de tarea_2D_MLP_Keras***\n")
+
+    return accuracy, total_time
 
 
 #Main
@@ -307,28 +590,35 @@ if __name__ == "__main__":
     ## en la evaluación pueden dejarse comentadas en esta sección.
     # test_DecisionStump(9, 59, 0.4354, 1)
 
+    ## Tarea 1A y 1B
     rend_1A = tareas_1A_y_1B_adaboost_binario(clase=9, T=15, A=15, verbose=True)
     
-    ## Una parte de la tarea 1C es fijar los parámetro más adecuados
-
-    
+    ## Tarea 1C
+    ## Una parte de la tarea 1C es fijar los parámetro más adecuados    
     valorT, valorA = tarea_1C_graficas_rendimiento(rend_1A)
-
-    ## Se puede implementar reusando el código de las tareas 1A y 1B
-    #tareas_1A_y_1B_adaboost_binario(clase=9, T=incognita, A=incognita)
     
+    ## Tarea 1D
     rend_1D = tarea_1D_adaboost_multiclase(T=valorT, A=valorA, verbose=True)
-    """
-    #rend_1E = tarea_1E_adaboost_multiclase_mejorado(T=incognita, A=incognita)
-    #tarea_1E_graficas_rendimiento(rend_1D, rend_1E)
-    
-    rend_2A = tarea_2A_AdaBoostClassifier_default(n_estimators=incognita)
-    #tarea_2B_graficas_rendimiento(rend_1E, rend_2A)
-    rend_2C = tarea_2C_AdaBoostClassifier_faster(n_estimators=incognita)
-    #tarea_2C_graficas_rendimiento(rend_2A, rend_2C)
 
-    rend_2D = tarea_2D_AdaBoostClassifier_DecisionTree(incognitas)
-    rend_2E = tarea_2E_MLP_Keras(n_hid_lyrs=incognita, n_nrns_lyr=incognitas)
-    rend_2F = tarea_2F_CNN_Keras(incognitas)    
-    #tarea_2G_graficas_rendimiento(rend_1F, rend_2C, rend_2D, rend_2E, rend_2F)
-    """
+    ## Tarea 2A
+    estimadores = 2
+    rend_2A = tarea_2A_AdaBoostClassifier_default(n_estimators=estimadores, verbose=True)
+
+    ## Tarea 2B
+    ## Esto se encuentra comentado ya que requiere mucho tiempo realizar las 
+    ## gráficas. Si se quieren obtener, descomentar la siguiente línea
+    ## Las gráficas obtenidas por mi se encuentran en la documentación/informe/memoria
+    calculado_2A = False
+    calculado_2A = tarea_2B_graficas_rendimiento(rend_1D, rend_2A)
+
+    ## Tarea 2C
+    estimadores=50
+    rend_2C = tarea_2C_AdaBoostClassifier_faster(n_estimators=estimadores, verbose=True)
+
+    ## Esto se encuentra comentado ya que requiere mucho tiempo realizar las 
+    ## gráficas. Si se quieren obtener, descomentar la siguiente línea
+    ## Las gráficas obtenidas por mi se encuentran en la documentación/informe/memoria
+    tarea_2C_graficas_rendimiento(rend_2A, rend_2C, calculado_2A=calculado_2A)
+
+    ## Tarea 2D
+    rend_2D = tarea_2D_MLP_Keras()
